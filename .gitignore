@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# build output
+# dist/
+
+# compiled JS artefacts alongside source TS (tsup writes these during dev)
+src/*.js
+src/*.js.map
+
+# test artefacts
+coverage/
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

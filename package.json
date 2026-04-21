@@ -1,0 +1,23 @@
+{
+  "name": "intertia-ts",
+  "description": "A module that validates and parses environment variables into an strongly typed object",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "vitest",
+    "test:once": "vitest --watch=false",
+    "build": "tsup"
+  },
+  "keywords": [
+    "env"
+  ],
+  "author": "Francis Judge <fjudge7@gmail.com>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.27.0",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
+  }
+}
