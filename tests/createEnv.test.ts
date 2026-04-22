@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { createEnv, fields, Infer, makeField, Schema } from "../src"
+import { createEnv, prop, Infer, makeField, Schema } from "../src"
 
 // ---------------------------------------------------------------------------
 // Manual testing: type inference
@@ -7,7 +7,7 @@ import { createEnv, fields, Infer, makeField, Schema } from "../src"
 
 describe("manual createEnv", () => {
    it("should create a failing env validation", () => {
-      const schema = {NOT_THERE: fields.string()}
+      const schema = {NOT_THERE: prop.string()}
       const result = createEnv(schema)
       expect(result.success).toBe(false)
       if (result.success === false) {
@@ -17,7 +17,7 @@ describe("manual createEnv", () => {
 
    it("should create a successful env validation", () => {
       // Must NOT type this object in order for the type inference to work
-      const schema = {NAME: fields.string(), AGE: fields.integer()}
+      const schema = {NAME: prop.string(), AGE: prop.integer()}
       // This type is the object that is created from validator
       type Person = Infer<typeof schema>
       // Create the env object
@@ -38,21 +38,21 @@ describe("manual createEnv", () => {
 
 describe("createEnv result shape", () => {
    it("returns { success: true, data } on a valid source", () => {
-      const result = createEnv({KEY: fields.string()}, {KEY: "hello"})
+      const result = createEnv({KEY: prop.string()}, {KEY: "hello"})
       expect(result.success).toBe(true)
       if (result.success === true)
          expect(result.data.KEY).toBe("hello")
    })
 
    it("returns { success: false, errors } on an invalid source", () => {
-      const result = createEnv({KEY: fields.string()}, {})
+      const result = createEnv({KEY: prop.string()}, {})
       expect(result.success).toBe(false)
       if (result.success === false)
          expect(result.errors.length).toBeGreaterThan(0)
    })
 
    it("error shape has key and message", () => {
-      const result = createEnv({MY_KEY: fields.string()}, {})
+      const result = createEnv({MY_KEY: prop.string()}, {})
       expect(result.success).toBe(false)
       if (result.success === false)
          expect(result.errors[0]).toMatchObject({key: "MY_KEY", message: expect.any(String)})
@@ -60,24 +60,24 @@ describe("createEnv result shape", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Required fields
+// Required prop
 // ---------------------------------------------------------------------------
 
-describe("required fields", () => {
+describe("required prop", () => {
    it("accepts a present value", () => {
-      const r = createEnv({KEY: fields.string()}, {KEY: "value"})
+      const r = createEnv({KEY: prop.string()}, {KEY: "value"})
       expect(r.success).toBe(true)
    })
 
    it("rejects a missing key", () => {
-      const r = createEnv({KEY: fields.string()}, {})
+      const r = createEnv({KEY: prop.string()}, {})
       expect(r.success).toBe(false)
       if (r.success === false)
          expect(r.errors[0].key).toBe("KEY")
    })
 
    it("treats an empty-string value as missing", () => {
-      const r = createEnv({KEY: fields.string()}, {KEY: ""})
+      const r = createEnv({KEY: prop.string()}, {KEY: ""})
       expect(r.success).toBe(false)
       if (r.success === false)
          expect(r.errors[0].key).toBe("KEY")
@@ -85,77 +85,77 @@ describe("required fields", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Optional fields
+// Optional prop
 // ---------------------------------------------------------------------------
 
-describe("optional fields", () => {
+describe("optional prop", () => {
    it("produces undefined for a missing key", () => {
-      const r = createEnv({KEY: fields.string().optional()}, {})
+      const r = createEnv({KEY: prop.string().optional()}, {})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.KEY).toBeUndefined()
    })
 
    it("produces undefined for an empty-string value", () => {
-      const r = createEnv({KEY: fields.string().optional()}, {KEY: ""})
+      const r = createEnv({KEY: prop.string().optional()}, {KEY: ""})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.KEY).toBeUndefined()
    })
 
    it("parses the value when it is present", () => {
-      const r = createEnv({PORT: fields.number().optional()}, {PORT: "42"})
+      const r = createEnv({PORT: prop.number().optional()}, {PORT: "42"})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.PORT).toBe(42)
    })
 
    it("still validates the value when present", () => {
-      const r = createEnv({PORT: fields.number().optional()}, {PORT: "not-a-number"})
+      const r = createEnv({PORT: prop.number().optional()}, {PORT: "not-a-number"})
       expect(r.success).toBe(false)
    })
 })
 
 // ---------------------------------------------------------------------------
-// Defaulted fields
+// Defaulted prop
 // ---------------------------------------------------------------------------
 
-describe("defaulted fields", () => {
+describe("defaulted prop", () => {
    it("uses the fallback when the key is missing", () => {
-      const r = createEnv({PORT: fields.port().optional().default(3000)}, {})
+      const r = createEnv({PORT: prop.port().optional().default(3000)}, {})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.PORT).toBe(3000)
    })
 
    it("uses the fallback when the value is an empty string", () => {
-      const r = createEnv({PORT: fields.port().optional().default(3000)}, {PORT: ""})
+      const r = createEnv({PORT: prop.port().optional().default(3000)}, {PORT: ""})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.PORT).toBe(3000)
    })
 
    it("parses the live value instead of using the fallback when present", () => {
-      const r = createEnv({PORT: fields.port().optional().default(3000)}, {PORT: "8080"})
+      const r = createEnv({PORT: prop.port().optional().default(3000)}, {PORT: "8080"})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.PORT).toBe(8080)
    })
 
    it("still validates the live value even though a fallback exists", () => {
-      const r = createEnv({PORT: fields.port().optional().default(3000)}, {PORT: "99999"})
+      const r = createEnv({PORT: prop.port().optional().default(3000)}, {PORT: "99999"})
       expect(r.success).toBe(false)
    })
 
    it("supports a falsy fallback (false)", () => {
-      const r = createEnv({FLAG: fields.boolean().optional().default(false)}, {})
+      const r = createEnv({FLAG: prop.boolean().optional().default(false)}, {})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.FLAG).toBe(false)
    })
 
    it("supports a falsy fallback (0)", () => {
-      const r = createEnv({N: fields.number().optional().default(0)}, {})
+      const r = createEnv({N: prop.number().optional().default(0)}, {})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.N).toBe(0)
@@ -169,7 +169,7 @@ describe("defaulted fields", () => {
 describe("error accumulation", () => {
    it("collects errors from every failing field", () => {
       const r = createEnv(
-         {A: fields.string(), B: fields.number(), C: fields.boolean()},
+         {A: prop.string(), B: prop.number(), C: prop.boolean()},
          {}
       )
       expect(r.success).toBe(false)
@@ -181,7 +181,7 @@ describe("error accumulation", () => {
 
    it("does not short-circuit on the first error", () => {
       const r = createEnv(
-         {PORT: fields.port(), URL: fields.url()},
+         {PORT: prop.port(), URL: prop.url()},
          {PORT: "bad", URL: "bad"}
       )
       expect(r.success).toBe(false)
@@ -189,9 +189,9 @@ describe("error accumulation", () => {
          expect(r.errors).toHaveLength(2)
    })
 
-   it("reports only the failing fields, not the passing ones", () => {
+   it("reports only the failing prop, not the passing ones", () => {
       const r = createEnv(
-         {GOOD: fields.string(), BAD: fields.number()},
+         {GOOD: prop.string(), BAD: prop.number()},
          {GOOD: "ok", BAD: "nope"}
       )
       expect(r.success).toBe(false)
@@ -208,14 +208,14 @@ describe("error accumulation", () => {
 
 describe("mixed schema", () => {
    const schema = {
-      HOST: fields.url(),
-      PORT: fields.port().optional().default(3000),
-      DEBUG: fields.boolean().optional(),
-      ENV: fields.enum(["dev", "prod"] as const),
-      TAGS: fields.list().optional(),
+      HOST: prop.url(),
+      PORT: prop.port().optional().default(3000),
+      DEBUG: prop.boolean().optional(),
+      ENV: prop.enum(["dev", "prod"] as const),
+      TAGS: prop.list().optional(),
    }
 
-   it("succeeds with all required fields supplied", () => {
+   it("succeeds with all required prop supplied", () => {
       const r = createEnv(schema, {
          HOST: "https://example.com",
          ENV: "prod",
@@ -229,7 +229,7 @@ describe("mixed schema", () => {
       expect(r.data.TAGS).toBeUndefined()
    })
 
-   it("succeeds with all fields supplied", () => {
+   it("succeeds with all prop supplied", () => {
       const r = createEnv(schema, {
          HOST: "https://api.example.com",
          PORT: "8080",
@@ -256,10 +256,10 @@ describe("mixed schema", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Custom fields via makeField
+// Custom prop via makeField
 // ---------------------------------------------------------------------------
 
-describe("custom fields via makeField", () => {
+describe("custom prop via makeField", () => {
    const nonNegative = makeField((raw) => {
       const n = Number(raw)
       if (Number.isNaN(n) || n < 0) throw new Error("must be a non-negative number")
@@ -296,7 +296,7 @@ describe("custom fields via makeField", () => {
 
 describe("custom source", () => {
    it("reads from the supplied object, not process.env", () => {
-      const r = createEnv({KEY: fields.string()}, {KEY: "from-custom"})
+      const r = createEnv({KEY: prop.string()}, {KEY: "from-custom"})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.KEY).toBe("from-custom")
@@ -304,7 +304,7 @@ describe("custom source", () => {
 
    it("does not read extra keys from process.env when a custom source is given", () => {
       process.env["SHOULD_NOT_BE_READ"] = "injected"
-      const r = createEnv({SHOULD_NOT_BE_READ: fields.string()}, {})
+      const r = createEnv({SHOULD_NOT_BE_READ: prop.string()}, {})
       delete process.env["SHOULD_NOT_BE_READ"]
       // custom source ({}) does not contain the key → should fail
       expect(r.success).toBe(false)
@@ -325,7 +325,7 @@ describe("custom source", () => {
 describe("schema key ordering", () => {
    it("preserves all keys in the result data", () => {
       const r = createEnv(
-         {Z: fields.string(), A: fields.string(), M: fields.string()},
+         {Z: prop.string(), A: prop.string(), M: prop.string()},
          {Z: "z", A: "a", M: "m"}
       )
       expect(r.success).toBe(true)

@@ -2,27 +2,27 @@
  * A field that must be present in the environment.
  * The parse function throws with a descriptive message if the value is invalid.
  */
-export type RequiredField<T> = {
+export type RequiredProp<T> = {
    readonly _tag: "required"
    readonly parse: (raw: string) => T
    readonly description?: string
-   readonly optional: () => OptionalField<T>
+   readonly optional: () => OptionalProp<T>
 }
 
 /**
  * A field that may be absent. Produces T | undefined when missing.
  */
-export type OptionalField<T> = {
+export type OptionalProp<T> = {
    readonly _tag: "optional"
    readonly parse: (raw: string) => T
    readonly description?: string
-   readonly default: (value: T) => DefaultedField<T>
+   readonly default: (value: T) => DefaultedProp<T>
 }
 
 /**
  * An optional field with a fallback value. Always produces T — never undefined.
  */
-export type DefaultedField<T> = {
+export type DefaultedProp<T> = {
    readonly _tag: "defaulted"
    readonly parse: (raw: string) => T
    readonly description?: string
@@ -32,7 +32,7 @@ export type DefaultedField<T> = {
 /**
  * A union type representing all `field` types
  */
-export type AnyField = RequiredField<unknown> | OptionalField<unknown> | DefaultedField<unknown>
+export type AnyField = RequiredProp<unknown> | OptionalProp<unknown> | DefaultedProp<unknown>
 
 /**
  * Defines an `env` validation schema type definition
@@ -46,9 +46,9 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {}
  */
 export type Infer<S extends Schema> = Simplify<{
    readonly [K in keyof S]:
-   S[K] extends DefaultedField<infer T> ? T :
-      S[K] extends OptionalField<infer T> ? T | undefined :
-         S[K] extends RequiredField<infer T> ? T :
+   S[K] extends DefaultedProp<infer T> ? T :
+      S[K] extends OptionalProp<infer T> ? T | undefined :
+         S[K] extends RequiredProp<infer T> ? T :
             never
 }>
 

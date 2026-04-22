@@ -1,6 +1,6 @@
 {
-  "name": "intertia-ts",
-  "description": "A module that validates and parses environment variables into an strongly typed object",
+  "name": "inertia-ts",
+  "description": "A library to validate and parse the environment into a state object",
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {

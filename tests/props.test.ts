@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { makeField, fields } from "../src/fields"
+import { makeField, prop } from "../src/"
 
 // ---------------------------------------------------------------------------
 // makeField — state chain
@@ -71,160 +71,160 @@ describe("makeField", () => {
 })
 
 // ---------------------------------------------------------------------------
-// fields.string
+// prop.string
 // ---------------------------------------------------------------------------
 
-describe("fields.string", () => {
+describe("prop.string", () => {
   it("is a RequiredField", () => {
-    expect(fields.string()._tag).toBe("required")
+    expect(prop.string()._tag).toBe("required")
   })
 
   it("parse accepts a non-empty string", () => {
-    expect(fields.string().parse("hello")).toBe("hello")
+    expect(prop.string().parse("hello")).toBe("hello")
   })
 
   it("parse throws on empty input", () => {
-    expect(() => fields.string().parse("")).toThrow()
+    expect(() => prop.string().parse("")).toThrow()
   })
 
   it("accepts an optional description", () => {
-    expect(fields.string("my key").description).toBe("my key")
+    expect(prop.string("my key").description).toBe("my key")
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.number
+// prop.number
 // ---------------------------------------------------------------------------
 
-describe("fields.number", () => {
+describe("prop.number", () => {
   it("is a RequiredField", () => {
-    expect(fields.number()._tag).toBe("required")
+    expect(prop.number()._tag).toBe("required")
   })
 
   it("parse returns a number", () => {
-    expect(fields.number().parse("3.14")).toBe(3.14)
+    expect(prop.number().parse("3.14")).toBe(3.14)
   })
 
   it("parse throws on non-numeric input", () => {
-    expect(() => fields.number().parse("abc")).toThrow()
+    expect(() => prop.number().parse("abc")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.integer
+// prop.integer
 // ---------------------------------------------------------------------------
 
-describe("fields.integer", () => {
+describe("prop.integer", () => {
   it("is a RequiredField", () => {
-    expect(fields.integer()._tag).toBe("required")
+    expect(prop.integer()._tag).toBe("required")
   })
 
   it("parse returns a whole number", () => {
-    expect(fields.integer().parse("10")).toBe(10)
+    expect(prop.integer().parse("10")).toBe(10)
   })
 
   it("parse throws on a decimal", () => {
-    expect(() => fields.integer().parse("1.5")).toThrow()
+    expect(() => prop.integer().parse("1.5")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.boolean
+// prop.boolean
 // ---------------------------------------------------------------------------
 
-describe("fields.boolean", () => {
+describe("prop.boolean", () => {
   it("is a RequiredField", () => {
-    expect(fields.boolean()._tag).toBe("required")
+    expect(prop.boolean()._tag).toBe("required")
   })
 
   it("parse returns true for 'true'", () => {
-    expect(fields.boolean().parse("true")).toBe(true)
+    expect(prop.boolean().parse("true")).toBe(true)
   })
 
   it("parse returns false for 'false'", () => {
-    expect(fields.boolean().parse("false")).toBe(false)
+    expect(prop.boolean().parse("false")).toBe(false)
   })
 
   it("parse throws on unrecognised value", () => {
-    expect(() => fields.boolean().parse("maybe")).toThrow()
+    expect(() => prop.boolean().parse("maybe")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.url
+// prop.url
 // ---------------------------------------------------------------------------
 
-describe("fields.url", () => {
+describe("prop.url", () => {
   it("is a RequiredField", () => {
-    expect(fields.url()._tag).toBe("required")
+    expect(prop.url()._tag).toBe("required")
   })
 
   it("parse returns a valid URL string", () => {
-    expect(fields.url().parse("https://example.com")).toBe("https://example.com")
+    expect(prop.url().parse("https://example.com")).toBe("https://example.com")
   })
 
   it("parse throws on a bare hostname", () => {
-    expect(() => fields.url().parse("example.com")).toThrow()
+    expect(() => prop.url().parse("example.com")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.port
+// prop.port
 // ---------------------------------------------------------------------------
 
-describe("fields.port", () => {
+describe("prop.port", () => {
   it("is a RequiredField", () => {
-    expect(fields.port()._tag).toBe("required")
+    expect(prop.port()._tag).toBe("required")
   })
 
   it("parse returns a number in range", () => {
-    expect(fields.port().parse("8080")).toBe(8080)
+    expect(prop.port().parse("8080")).toBe(8080)
   })
 
   it("parse throws on out-of-range values", () => {
-    expect(() => fields.port().parse("0")).toThrow()
-    expect(() => fields.port().parse("65536")).toThrow()
+    expect(() => prop.port().parse("0")).toThrow()
+    expect(() => prop.port().parse("65536")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.enum
+// prop.enum
 // ---------------------------------------------------------------------------
 
-describe("fields.enum", () => {
+describe("prop.enum", () => {
   const values = ["a", "b", "c"] as const
 
   it("is a RequiredField", () => {
-    expect(fields.enum(values)._tag).toBe("required")
+    expect(prop.enum(values)._tag).toBe("required")
   })
 
   it("parse accepts a value in the set", () => {
-    expect(fields.enum(values).parse("b")).toBe("b")
+    expect(prop.enum(values).parse("b")).toBe("b")
   })
 
   it("parse throws on a value outside the set", () => {
-    expect(() => fields.enum(values).parse("d")).toThrow()
+    expect(() => prop.enum(values).parse("d")).toThrow()
   })
 })
 
 // ---------------------------------------------------------------------------
-// fields.list
+// prop.list
 // ---------------------------------------------------------------------------
 
-describe("fields.list", () => {
+describe("prop.list", () => {
   it("is a RequiredField", () => {
-    expect(fields.list()._tag).toBe("required")
+    expect(prop.list()._tag).toBe("required")
   })
 
   it("parse splits on comma by default", () => {
-    expect(fields.list().parse("a,b,c")).toEqual(["a", "b", "c"])
+    expect(prop.list().parse("a,b,c")).toEqual(["a", "b", "c"])
   })
 
   it("parse uses a custom separator when provided", () => {
-    expect(fields.list(";").parse("a;b;c")).toEqual(["a", "b", "c"])
+    expect(prop.list(";").parse("a;b;c")).toEqual(["a", "b", "c"])
   })
 
   it("parse throws on an empty string", () => {
-    expect(() => fields.list().parse("")).toThrow()
+    expect(() => prop.list().parse("")).toThrow()
   })
 })

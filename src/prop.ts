@@ -1,4 +1,4 @@
-import type { RequiredField, OptionalField, DefaultedField } from "./types"
+import type { RequiredProp, OptionalProp, DefaultedProp } from "./types"
 import {
   parseString,
   parseNumber,
@@ -15,23 +15,23 @@ import {
 //
 // makeField is the only place that constructs the three POJO states.
 // All built-in helpers call this, and callers can call it directly to define
-// custom fields with any parse function.
+// custom prop with any parse function.
 // ---------------------------------------------------------------------------
 
 export function makeField<T>(
   parse: (raw: string) => T,
   description?: string
-): RequiredField<T> {
+): RequiredProp<T> {
   return {
     _tag: "required",
     parse,
     description,
-    optional(): OptionalField<T> {
+    optional(): OptionalProp<T> {
       return {
         _tag: "optional",
         parse,
         description,
-        default(value: T): DefaultedField<T> {
+        default(value: T): DefaultedProp<T> {
           return {
             _tag: "defaulted",
             parse,
@@ -48,63 +48,63 @@ export function makeField<T>(
 // Built-in field helpers
 // ---------------------------------------------------------------------------
 
-export const fields = {
+export const prop = {
   /**
    * A non-empty string.
    */
-  string(description?: string): RequiredField<string> {
+  string(description?: string): RequiredProp<string> {
     return makeField(parseString, description)
   },
 
   /**
    * Any finite number.
    */
-  number(description?: string): RequiredField<number> {
+  number(description?: string): RequiredProp<number> {
     return makeField(parseNumber, description)
   },
 
   /**
    * A whole number (no decimals).
    */
-  integer(description?: string): RequiredField<number> {
+  integer(description?: string): RequiredProp<number> {
     return makeField(parseInteger, description)
   },
 
   /**
    * true/false, 1/0, yes/no (case-insensitive).
    */
-  boolean(description?: string): RequiredField<boolean> {
+  boolean(description?: string): RequiredProp<boolean> {
     return makeField(parseBoolean, description)
   },
 
   /**
    * A fully-qualified URL (parsed with the WHATWG URL constructor).
    */
-  url(description?: string): RequiredField<string> {
+  url(description?: string): RequiredProp<string> {
     return makeField(parseUrl, description)
   },
 
   /**
    * An integer in the range 1–65535.
    */
-  port(description?: string): RequiredField<number> {
+  port(description?: string): RequiredProp<number> {
     return makeField(parsePort, description)
   },
 
   /**
    * One of a fixed set of string literals.
    * Pass `as const` to get a narrowed return type:
-   *   fields.enum(["a", "b"] as const) → RequiredField<"a" | "b">
+   *   prop.enum(["a", "b"] as const) → RequiredField<"a" | "b">
    */
-  enum<T extends string>(values: readonly T[], description?: string): RequiredField<T> {
+  enum<T extends string>(values: readonly T[], description?: string): RequiredProp<T> {
     return makeField(parseEnum(values), description)
   },
 
   /**
    * A comma-separated list of non-empty strings.
-   * Pass a custom separator if needed: fields.list(";")
+   * Pass a custom separator if needed: prop.list(";")
    */
-  list(separator = ",", description?: string): RequiredField<string[]> {
+  list(separator = ",", description?: string): RequiredProp<string[]> {
     return makeField(parseList(separator), description)
   },
 }

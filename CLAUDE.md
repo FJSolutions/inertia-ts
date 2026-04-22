@@ -17,7 +17,7 @@ There is no lint script. Type-checking is implicit via tsup/vitest.
 `intertia-ts` is a zero-dependency TypeScript library for validating and parsing environment variables into a strongly typed object. The public API is three exports from `src/index.ts`:
 
 - **`createEnv(schema, source?)`** — validates `source` (defaults to `process.env`) against a schema and returns a discriminated union `{ success: true, data }` | `{ success: false, errors }`. All errors are collected before returning, so callers see every problem at once.
-- **`fields`** — object of built-in field factories: `string`, `number`, `integer`, `boolean`, `url`, `port`, `enum`, `list`.
+- **`prop`** — object of built-in field factories: `string`, `number`, `integer`, `boolean`, `url`, `port`, `enum`, `list`.
 - **`makeField(parse, description?)`** — escape hatch for custom parsers; returns a `RequiredField<T>`.
 
 ### Field state chain

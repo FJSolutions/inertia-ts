@@ -1,7 +1,7 @@
 export type {
-  RequiredField,
-  OptionalField,
-  DefaultedField,
+  RequiredProp,
+  OptionalProp,
+  DefaultedProp,
   AnyField,
   Schema,
   Infer,
@@ -9,5 +9,5 @@ export type {
   ValidationResult,
 } from "./types"
 
-export { makeField, fields } from "./fields"
+export { makeField, prop } from "./prop"
 export { createEnv } from "./createEnv"

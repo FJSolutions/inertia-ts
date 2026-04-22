@@ -1,16 +1,16 @@
-import { createEnv, fields, makeField } from "../src"
+import { createEnv, prop, makeField } from "../src"
 
 // ---------------------------------------------------------------------------
 // 1. Define a schema
 // ---------------------------------------------------------------------------
 
 const schema = {
-   DATABASE_URL: fields.url("Postgres connection string"),
-   PORT: fields.port().optional().default(3000),
-   NODE_ENV: fields.enum(["development", "staging", "production"] as const),
-   ENABLE_CACHE: fields.boolean().optional().default(false),
-   ALLOWED_HOSTS: fields.list(",", "Comma-separated list of allowed hostnames").optional(),
-   API_KEY: fields.string("Secret API key"),
+   DATABASE_URL: prop.url("Postgres connection string"),
+   PORT: prop.port().optional().default(3000),
+   NODE_ENV: prop.enum(["development", "staging", "production"] as const),
+   ENABLE_CACHE: prop.boolean().optional().default(false),
+   ALLOWED_HOSTS: prop.list(",", "Comma-separated list of allowed hostnames").optional(),
+   API_KEY: prop.string("Secret API key"),
 
    // Custom field — any parse function works
    RETRY_DELAY_MS: makeField((raw) => {
