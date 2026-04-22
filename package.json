@@ -2,11 +2,13 @@
   "name": "inertia-ts",
   "description": "A library to validate and parse the environment into a state object",
   "version": "0.1.0",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "test": "vitest",
     "test:once": "vitest --watch=false",
-    "build": "tsup"
+    "build": "tsup",
+    "pub": "pnpm build & pnpm pack --pack-destination /Projects/npm-local/"
   },
   "keywords": [
     "env"

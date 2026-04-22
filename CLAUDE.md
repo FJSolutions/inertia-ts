@@ -41,7 +41,7 @@ makeField(parse)           → RequiredField<T>
 ### Test files
 
 - `src/tests.ts` — self-contained test suite with a minimal hand-rolled harness (no vitest). Run with `tsx src/tests.ts` if needed for quick iteration.
-- `tests/example.ts` — usage example showing the full API.
+- `tests/longer-example.ts` — usage example showing the full API.
 - Vitest picks up test files via its default config.
 
 ### Build
