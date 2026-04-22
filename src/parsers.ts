@@ -6,8 +6,6 @@
 // they have no knowledge of optionality, defaults, or schemas.
 // ---------------------------------------------------------------------------
 
-import { Secret } from "./secret";
-
 export function parseString(raw: string): string {
    if (raw.trim() === "") throw new Error("must not be empty")
    return raw
@@ -73,11 +71,42 @@ export function parseList(separator = ","): (raw: string) => string[] {
    }
 }
 
-export function parseSecret(): (raw: string) => Secret<string> {
-   return (raw: string) => {
-      if (raw.length === 0) {
-         throw new Error("must be present")
-      }
-      return new Secret(raw)
+export function parseSecret(raw: string): Secret<string> {
+   if (raw.trim().length === 0) throw new Error("secret cannot be empty")
+   return new Secret(raw)
+}
+
+/**
+ * Represents a Secret value that shpuldn't be accidentally exposed
+ */
+export class Secret<T> {
+   // @ts-ignore
+   readonly #_value: T
+
+   constructor(value: T) {
+      this.#_value = value
+   }
+
+   // The only way to get the value — explicit and grep-able
+   /**
+    * Exposes the actual value of the Secret
+    */
+   expose(): T {
+      return this.#_value
+   }
+
+   // Prevents console.log(secret) leaking it
+   toString(): string {
+      return '[Secret]'
+   }
+
+   // Prevents JSON.stringify leaking it
+   toJSON(): string {
+      return '[Secret]'
+   }
+
+   // Prevents util.inspect (Node.js console.log of objects) leaking it
+   [Symbol.for('nodejs.util.inspect.custom')](): string {
+      return '[Secret]'
    }
 }

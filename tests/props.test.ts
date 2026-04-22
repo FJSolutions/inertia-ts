@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { makeProp, prop, createEnv } from "../src/"
-import { Secret } from "../src/secret"
+import { Secret } from "../src/parsers"
 
 // ---------------------------------------------------------------------------
 // makeField — state chain
@@ -240,7 +240,7 @@ describe("prop.secret", () => {
   })
 
   it("parse returns the raw string for a non-empty value", () => {
-    expect(prop.secret().parse("s3cr3t!")).toBe("s3cr3t!")
+    expect(prop.secret().parse("s3cr3t!").expose()).toBe("s3cr3t!")
   })
 
   it("parse throws on an empty string", () => {
@@ -256,9 +256,10 @@ describe("prop.secret", () => {
   })
 
   it("supports .optional().default()", () => {
-    const f = prop.secret().optional().default("fallback")
+    const fallback = new Secret("fallback")
+    const f = prop.secret().optional().default(fallback)
     expect(f._tag).toBe("defaulted")
-    expect(f.fallback).toBe("fallback")
+    expect(f.fallback.expose()).toBe("fallback")
   })
 
   describe("integration with createEnv", () => {
@@ -266,7 +267,7 @@ describe("prop.secret", () => {
       const r = createEnv({ API_KEY: prop.secret() }, { API_KEY: "abc123" })
       expect(r.success).toBe(true)
       if (!r.success) return
-      expect(r.data.API_KEY).toBe("abc123")
+      expect(r.data.API_KEY.expose()).toBe("abc123")
     })
 
     it("rejects a missing secret", () => {
@@ -282,10 +283,11 @@ describe("prop.secret", () => {
     })
 
     it("uses the fallback when the secret is absent", () => {
-      const r = createEnv({ TOKEN: prop.secret().optional().default("default-token") }, {})
+      const fallback = new Secret("default-token")
+      const r = createEnv({ TOKEN: prop.secret().optional().default(fallback) }, {})
       expect(r.success).toBe(true)
       if (!r.success) return
-      expect(r.data.TOKEN).toBe("default-token")
+      expect(r.data.TOKEN?.expose()).toBe("default-token")
     })
   })
 })
@@ -296,8 +298,10 @@ describe("prop.secret", () => {
 
 describe("Secret", () => {
   it("expose() returns the original value", () => {
-    const s = new Secret("my-password")
-    expect(s.expose()).toBe("my-password")
+    const r = createEnv({ API_KEY: prop.secret() }, {API_KEY: "my-password"})
+    expect(r.success).toBe(true)
+    if(!r.success) return
+    expect(r.data.API_KEY.expose()).toBe("my-password")
   })
 
   it("expose() works for non-string generics", () => {
