@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(pnpm test *)",
-      "Bash(exit 0)"
+      "Bash(exit 0)",
+      "Bash(pnpm build *)",
+      "Bash(npx tsup *)",
+      "Bash(npx vitest *)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

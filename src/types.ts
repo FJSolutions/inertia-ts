@@ -32,12 +32,12 @@ export type DefaultedProp<T> = {
 /**
  * A union type representing all `field` types
  */
-export type AnyField = RequiredProp<unknown> | OptionalProp<unknown> | DefaultedProp<unknown>
+export type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any>
 
 /**
  * Defines an `env` validation schema type definition
  */
-export type Schema = Record<string, AnyField>
+export type Schema = Record<string, AnyProp>
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {}
 

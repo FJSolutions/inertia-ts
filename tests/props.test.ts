@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { makeField, prop } from "../src/"
+import { makeProp, prop, createEnv } from "../src/"
+import { Secret } from "../src/secret"
 
 // ---------------------------------------------------------------------------
 // makeField — state chain
@@ -9,61 +10,61 @@ describe("makeField", () => {
   const parse = (raw: string) => raw.toUpperCase()
 
   it("returns a RequiredField with _tag 'required'", () => {
-    expect(makeField(parse)._tag).toBe("required")
+    expect(makeProp(parse)._tag).toBe("required")
   })
 
   it("stores the supplied parse function", () => {
-    const f = makeField(parse)
+    const f = makeProp(parse)
     expect(f.parse("hello")).toBe("HELLO")
   })
 
   it("stores an optional description", () => {
-    const f = makeField(parse, "my description")
+    const f = makeProp(parse, "my description")
     expect(f.description).toBe("my description")
   })
 
   it("description is undefined when omitted", () => {
-    expect(makeField(parse).description).toBeUndefined()
+    expect(makeProp(parse).description).toBeUndefined()
   })
 
   describe(".optional()", () => {
     it("returns a field with _tag 'optional'", () => {
-      expect(makeField(parse).optional()._tag).toBe("optional")
+      expect(makeProp(parse).optional()._tag).toBe("optional")
     })
 
     it("carries the same parse function", () => {
-      const opt = makeField(parse).optional()
+      const opt = makeProp(parse).optional()
       expect(opt.parse("hi")).toBe("HI")
     })
 
     it("carries the description", () => {
-      const opt = makeField(parse, "desc").optional()
+      const opt = makeProp(parse, "desc").optional()
       expect(opt.description).toBe("desc")
     })
   })
 
   describe(".optional().default()", () => {
     it("returns a field with _tag 'defaulted'", () => {
-      expect(makeField(parse).optional().default("FALLBACK")._tag).toBe("defaulted")
+      expect(makeProp(parse).optional().default("FALLBACK")._tag).toBe("defaulted")
     })
 
     it("stores the fallback value", () => {
-      const def = makeField(parse).optional().default("FALLBACK")
+      const def = makeProp(parse).optional().default("FALLBACK")
       expect(def.fallback).toBe("FALLBACK")
     })
 
     it("carries the same parse function", () => {
-      const def = makeField(parse).optional().default("FALLBACK")
+      const def = makeProp(parse).optional().default("FALLBACK")
       expect(def.parse("hi")).toBe("HI")
     })
 
     it("carries the description", () => {
-      const def = makeField(parse, "desc").optional().default("FALLBACK")
+      const def = makeProp(parse, "desc").optional().default("FALLBACK")
       expect(def.description).toBe("desc")
     })
 
     it("accepts a fallback that is a complex type", () => {
-      const listField = makeField((raw) => raw.split(","))
+      const listField = makeProp((raw) => raw.split(","))
       const def = listField.optional().default(["a", "b"])
       expect(def.fallback).toEqual(["a", "b"])
     })
@@ -226,5 +227,111 @@ describe("prop.list", () => {
 
   it("parse throws on an empty string", () => {
     expect(() => prop.list().parse("")).toThrow()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// prop.secret
+// ---------------------------------------------------------------------------
+
+describe("prop.secret", () => {
+  it("is a RequiredField", () => {
+    expect(prop.secret()._tag).toBe("required")
+  })
+
+  it("parse returns the raw string for a non-empty value", () => {
+    expect(prop.secret().parse("s3cr3t!")).toBe("s3cr3t!")
+  })
+
+  it("parse throws on an empty string", () => {
+    expect(() => prop.secret().parse("")).toThrow()
+  })
+
+  it("accepts an optional description", () => {
+    expect(prop.secret("API key").description).toBe("API key")
+  })
+
+  it("supports .optional()", () => {
+    expect(prop.secret().optional()._tag).toBe("optional")
+  })
+
+  it("supports .optional().default()", () => {
+    const f = prop.secret().optional().default("fallback")
+    expect(f._tag).toBe("defaulted")
+    expect(f.fallback).toBe("fallback")
+  })
+
+  describe("integration with createEnv", () => {
+    it("accepts a present secret value", () => {
+      const r = createEnv({ API_KEY: prop.secret() }, { API_KEY: "abc123" })
+      expect(r.success).toBe(true)
+      if (!r.success) return
+      expect(r.data.API_KEY).toBe("abc123")
+    })
+
+    it("rejects a missing secret", () => {
+      const r = createEnv({ API_KEY: prop.secret() }, {})
+      expect(r.success).toBe(false)
+      if (r.success === false)
+        expect(r.errors[0].key).toBe("API_KEY")
+    })
+
+    it("rejects an empty-string secret", () => {
+      const r = createEnv({ API_KEY: prop.secret() }, { API_KEY: "" })
+      expect(r.success).toBe(false)
+    })
+
+    it("uses the fallback when the secret is absent", () => {
+      const r = createEnv({ TOKEN: prop.secret().optional().default("default-token") }, {})
+      expect(r.success).toBe(true)
+      if (!r.success) return
+      expect(r.data.TOKEN).toBe("default-token")
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Secret class
+// ---------------------------------------------------------------------------
+
+describe("Secret", () => {
+  it("expose() returns the original value", () => {
+    const s = new Secret("my-password")
+    expect(s.expose()).toBe("my-password")
+  })
+
+  it("expose() works for non-string generics", () => {
+    const s = new Secret(42)
+    expect(s.expose()).toBe(42)
+  })
+
+  it("toString() returns '[Secret]', not the value", () => {
+    const s = new Secret("my-password")
+    expect(s.toString()).toBe("[Secret]")
+    expect(String(s)).toBe("[Secret]")
+  })
+
+  it("template literal coercion does not leak the value", () => {
+    const s = new Secret("my-password")
+    expect(`token=${s}`).toBe("token=[Secret]")
+  })
+
+  it("toJSON() returns '[Secret]' so JSON.stringify does not leak", () => {
+    const s = new Secret("my-password")
+    expect(JSON.stringify({ key: s })).toBe('{"key":"[Secret]"}')
+  })
+
+  it("Node.js inspect custom symbol returns '[Secret]'", () => {
+    const s = new Secret("my-password")
+    const inspectFn = (s as unknown as Record<symbol, () => string>)[
+      Symbol.for("nodejs.util.inspect.custom")
+    ]
+    expect(inspectFn.call(s)).toBe("[Secret]")
+  })
+
+  it("the value is not accessible as a plain property", () => {
+    const s = new Secret("my-password")
+    expect((s as Record<string, any>)["_value"]).toBeUndefined()
+    expect(s.expose()).toBe("my-password")
   })
 })

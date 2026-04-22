@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { createEnv, prop, Infer, makeField, Schema } from "../src"
+import { createEnv, prop, Infer, makeProp, Schema } from "../src"
 
 // ---------------------------------------------------------------------------
 // Manual testing: type inference
@@ -260,7 +260,7 @@ describe("mixed schema", () => {
 // ---------------------------------------------------------------------------
 
 describe("custom prop via makeField", () => {
-   const nonNegative = makeField((raw) => {
+   const nonNegative = makeProp((raw) => {
       const n = Number(raw)
       if (Number.isNaN(n) || n < 0) throw new Error("must be a non-negative number")
       return n

@@ -2,12 +2,12 @@ export type {
   RequiredProp,
   OptionalProp,
   DefaultedProp,
-  AnyField,
+  AnyProp,
   Schema,
   Infer,
   ValidationError,
   ValidationResult,
 } from "./types"
 
-export { makeField, prop } from "./prop"
+export { makeProp, prop } from "./prop"
 export { createEnv } from "./createEnv"

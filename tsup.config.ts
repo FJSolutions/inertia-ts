@@ -11,5 +11,8 @@ export default defineConfig({
    treeshake: true,
    platform: "neutral",
    dts: true,
-   outExtension: () => ({ js: '.js' }),
+   outExtension: () => ({
+      js: '.js',
+      dts: '.d.ts'
+   }),
 })

@@ -1,4 +1,4 @@
-import { createEnv, prop, makeField, Infer } from "../src"
+import { createEnv, Infer, prop } from "../src"
 
 // Create the schema
 const schema = {
@@ -19,3 +19,4 @@ if (result.success === false) {
 const env: Infer<typeof schema> = result.data
 
 export { env }
+

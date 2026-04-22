@@ -29,11 +29,11 @@ type DefaultedProp<T> = {
 /**
  * A union type representing all `field` types
  */
-type AnyField = RequiredProp<unknown> | OptionalProp<unknown> | DefaultedProp<unknown>;
+type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any>;
 /**
  * Defines an `env` validation schema type definition
  */
-type Schema = Record<string, AnyField>;
+type Schema = Record<string, AnyProp>;
 type Simplify<T> = {
     [K in keyof T]: T[K];
 } & {};
@@ -61,7 +61,7 @@ type ValidationResult<T> = {
     readonly errors: readonly ValidationError[];
 };
 
-declare function makeField<T>(parse: (raw: string) => T, description?: string): RequiredProp<T>;
+declare function makeProp<T>(parse: (raw: string) => T, description?: string): RequiredProp<T>;
 declare const prop: {
     /**
      * A non-empty string.
@@ -98,8 +98,18 @@ declare const prop: {
      * Pass a custom separator if needed: prop.list(";")
      */
     list(separator?: string, description?: string): RequiredProp<string[]>;
+    /**
+     * A string that holds sensitive information and should be treated as secret.
+     * @param description
+     */
+    secret(description?: string): RequiredProp<string>;
 };
 
+/**
+ * Create an environment object from the supplied schema
+ * @param schema The schema of the environment to parse and validate.
+ * @param source The source object containing the environment (defaults to `process.env` if it exists)
+ */
 declare function createEnv<S extends Schema>(schema: S, source?: Record<string, string | undefined>): ValidationResult<Infer<S>>;
 
-export { type AnyField, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, makeField, prop };
+export { type AnyProp, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, makeProp, prop };

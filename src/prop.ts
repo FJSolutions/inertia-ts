@@ -18,7 +18,7 @@ import {
 // custom prop with any parse function.
 // ---------------------------------------------------------------------------
 
-export function makeField<T>(
+export function makeProp<T>(
   parse: (raw: string) => T,
   description?: string
 ): RequiredProp<T> {
@@ -53,42 +53,42 @@ export const prop = {
    * A non-empty string.
    */
   string(description?: string): RequiredProp<string> {
-    return makeField(parseString, description)
+    return makeProp(parseString, description)
   },
 
   /**
    * Any finite number.
    */
   number(description?: string): RequiredProp<number> {
-    return makeField(parseNumber, description)
+    return makeProp(parseNumber, description)
   },
 
   /**
    * A whole number (no decimals).
    */
   integer(description?: string): RequiredProp<number> {
-    return makeField(parseInteger, description)
+    return makeProp(parseInteger, description)
   },
 
   /**
    * true/false, 1/0, yes/no (case-insensitive).
    */
   boolean(description?: string): RequiredProp<boolean> {
-    return makeField(parseBoolean, description)
+    return makeProp(parseBoolean, description)
   },
 
   /**
    * A fully-qualified URL (parsed with the WHATWG URL constructor).
    */
   url(description?: string): RequiredProp<string> {
-    return makeField(parseUrl, description)
+    return makeProp(parseUrl, description)
   },
 
   /**
    * An integer in the range 1–65535.
    */
   port(description?: string): RequiredProp<number> {
-    return makeField(parsePort, description)
+    return makeProp(parsePort, description)
   },
 
   /**
@@ -97,7 +97,7 @@ export const prop = {
    *   prop.enum(["a", "b"] as const) → RequiredField<"a" | "b">
    */
   enum<T extends string>(values: readonly T[], description?: string): RequiredProp<T> {
-    return makeField(parseEnum(values), description)
+    return makeProp(parseEnum(values), description)
   },
 
   /**
@@ -105,6 +105,14 @@ export const prop = {
    * Pass a custom separator if needed: prop.list(";")
    */
   list(separator = ",", description?: string): RequiredProp<string[]> {
-    return makeField(parseList(separator), description)
+    return makeProp(parseList(separator), description)
   },
+
+  /**
+   * A string that holds sensitive information and should be treated as secret.
+   * @param description 
+   */
+  secret(description?: string): RequiredProp<string> {
+    return makeProp(parseString, description)
+  }
 }

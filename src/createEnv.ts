@@ -1,9 +1,9 @@
 import type {
-   Schema,
+   AnyProp,
    Infer,
-   AnyField,
-   ValidationResult,
+   Schema,
    ValidationError,
+   ValidationResult,
 } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -14,6 +14,11 @@ import type {
 // making this portable across runtimes and trivially testable.
 // ---------------------------------------------------------------------------
 
+/**
+ * Create an environment object from the supplied schema
+ * @param schema The schema of the environment to parse and validate.
+ * @param source The source object containing the environment (defaults to `process.env` if it exists)
+ */
 export function createEnv<S extends Schema>(
    schema: S,
    source: Record<string, string | undefined> = getDefaultSource()
@@ -22,42 +27,43 @@ export function createEnv<S extends Schema>(
    const errors: ValidationError[] = []
 
    for (const key of Object.keys(schema) as (keyof S & string)[]) {
-      const field: AnyField = schema[key]
+      const prop: AnyProp = schema[key]
       const raw = source[key]
 
       // -- Missing value -------------------------------------------------------
 
       if (raw === undefined || raw === "") {
-         if (field._tag === "required") {
-            errors.push({key, message: "is required but was not set"})
+         if (prop._tag === "required") {
+            errors.push({ key, message: "is required but was not set" })
             continue
          }
 
-         if (field._tag === "defaulted") {
-            data[key] = field.fallback
+         if (prop._tag === "defaulted") {
+            data[key] = prop.fallback
             continue
          }
 
          // optional with no default
          data[key] = undefined
+
          continue
       }
 
       // -- Value present: attempt parse ----------------------------------------
 
       try {
-         data[key] = field.parse(raw)
+         data[key] = prop.parse(raw)
       } catch (err) {
          const message = err instanceof Error ? err.message : String(err)
-         errors.push({key, message})
+         errors.push({ key, message })
       }
    }
 
    if (errors.length > 0) {
-      return {success: false, errors}
+      return { success: false, errors }
    }
 
-   return {success: true, data: data as Infer<S>}
+   return { success: true, data: data as Infer<S> }
 }
 
 // ---------------------------------------------------------------------------

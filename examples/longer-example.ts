@@ -1,4 +1,4 @@
-import { createEnv, prop, makeField } from "../src"
+import { createEnv, prop, makeProp } from "../src"
 
 // ---------------------------------------------------------------------------
 // 1. Define a schema
@@ -13,7 +13,7 @@ const schema = {
    API_KEY: prop.string("Secret API key"),
 
    // Custom field — any parse function works
-   RETRY_DELAY_MS: makeField((raw) => {
+   RETRY_DELAY_MS: makeProp((raw) => {
       const n = Number(raw)
       if (Number.isNaN(n) || n < 0) throw new Error("must be a non-negative number")
       return n

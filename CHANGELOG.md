@@ -12,10 +12,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - An error-helper to format the errors into something easily readable if
   `createEnv` is unsuccessful.
-- Secure property/parser that does print out it's contents by default when it is
-  logged.
 - It would be great if I could create sub-objects to logically divide parsed
   properties into.
+
+## [0.2.0] - 2026-04-22
+
+### Added
+
+- A secret `prop` whose value will not be exposed accidentally in logging or JSON serialization.
 
 ## [0.1.1] - 2026-04-22
 
