@@ -1,14 +1,19 @@
 {
   "name": "inertia-ts",
   "description": "A library to validate and parse the environment into a state object",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FJSolutions/inertia-ts"
+  },
   "scripts": {
     "test": "vitest",
     "test:once": "vitest --watch=false",
     "build": "tsup",
-    "pub": "pnpm build & pnpm pack --pack-destination /Projects/npm-local/"
+    "pub": "pnpm build & pnpm pack --pack-destination /Projects/npm-local/",
+    "clean": "bun -e \"import { $ } from 'bun'; await $`rm -rf dist`\""
   },
   "keywords": [
     "env"

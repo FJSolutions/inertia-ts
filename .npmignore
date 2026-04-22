@@ -1,6 +1,7 @@
 .idea/
 .claude/
 tests/
+src/
 
 CLAUDE.md
 tsup.config.ts

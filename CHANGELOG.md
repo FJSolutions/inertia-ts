@@ -17,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - It would be great if I could create sub-objects to logically divide parsed
   properties into.
 
-## [0.1.0] - 2026-04-22
+## [0.1.1] - 2026-04-22
 
 ### Changed
 
