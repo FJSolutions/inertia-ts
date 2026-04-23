@@ -1,7 +1,7 @@
 {
    "name": "inertia-ts",
    "description": "A library to validate and parse the environment into a state object",
-   "version": "0.2.0",
+   "version": "0.2.1",
    "type": "module",
    "main": "./dist/index.js",
    "types": "./dist/index.d.ts",

@@ -1,3 +1,5 @@
+import type { Secret } from "./parsers"
+
 /**
  * A field that must be present in the environment.
  * The parse function throws with a descriptive message if the value is invalid.
@@ -27,6 +29,27 @@ export type DefaultedProp<T> = {
    readonly parse: (raw: string) => T
    readonly description?: string
    readonly fallback: T
+}
+
+/**
+ * Like OptionalProp<Secret<T>> but .default() accepts the unwrapped T,
+ * so callers never need to construct a Secret manually.
+ */
+export type SecretOptionalProp<T> = {
+   readonly _tag: "optional"
+   readonly parse: (raw: string) => Secret<T>
+   readonly description?: string
+   readonly default: (value: T) => DefaultedProp<Secret<T>>
+}
+
+/**
+ * Like RequiredProp<Secret<T>> but .optional() returns SecretOptionalProp<T>.
+ */
+export type SecretRequiredProp<T> = {
+   readonly _tag: "required"
+   readonly parse: (raw: string) => Secret<T>
+   readonly description?: string
+   readonly optional: () => SecretOptionalProp<T>
 }
 
 /**

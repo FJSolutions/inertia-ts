@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { createEnv, prop, Infer, makeProp, Schema } from "../src"
+import { createEnv, prop, Infer, makeProp } from "../src"
+import { parseInteger } from "../src/parsers";
 
 // ---------------------------------------------------------------------------
 // Manual testing: type inference
@@ -325,7 +326,7 @@ describe("custom source", () => {
 describe("schema key ordering", () => {
    it("preserves all keys in the result data", () => {
       const r = createEnv(
-         {Z: prop.string(), A: prop.string(), M: prop.string()},
+         {Z: prop.string(), A: prop.string(), M: prop.string(), O: prop.secret(parseInteger).optional().default(42)},
          {Z: "z", A: "a", M: "m"}
       )
       expect(r.success).toBe(true)
@@ -333,5 +334,6 @@ describe("schema key ordering", () => {
       expect(r.data.Z).toBe("z")
       expect(r.data.A).toBe("a")
       expect(r.data.M).toBe("m")
+      expect(r.data.O.expose()).toBe(42)
    })
 })

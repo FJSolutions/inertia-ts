@@ -15,6 +15,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - It would be great if I could create sub-objects to logically divide parsed
   properties into.
 
+## [0.3.0] - 2026-04-23
+
+### Changed
+
+- Added generic secrets.
+  - The default being string.
+  - but if you supply a different parser, then you get correct type propagation
+
 ## [0.2.0] - 2026-04-22
 
 ### Added

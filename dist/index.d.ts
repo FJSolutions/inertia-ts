@@ -1,4 +1,18 @@
 /**
+ * Represents a Secret value that shpuldn't be accidentally exposed
+ */
+declare class Secret<T> {
+    #private;
+    constructor(value: T);
+    /**
+     * Exposes the actual value of the Secret
+     */
+    expose(): T;
+    toString(): string;
+    toJSON(): string;
+}
+
+/**
  * A field that must be present in the environment.
  * The parse function throws with a descriptive message if the value is invalid.
  */
@@ -25,6 +39,25 @@ type DefaultedProp<T> = {
     readonly parse: (raw: string) => T;
     readonly description?: string;
     readonly fallback: T;
+};
+/**
+ * Like OptionalProp<Secret<T>> but .default() accepts the unwrapped T,
+ * so callers never need to construct a Secret manually.
+ */
+type SecretOptionalProp<T> = {
+    readonly _tag: "optional";
+    readonly parse: (raw: string) => Secret<T>;
+    readonly description?: string;
+    readonly default: (value: T) => DefaultedProp<Secret<T>>;
+};
+/**
+ * Like RequiredProp<Secret<T>> but .optional() returns SecretOptionalProp<T>.
+ */
+type SecretRequiredProp<T> = {
+    readonly _tag: "required";
+    readonly parse: (raw: string) => Secret<T>;
+    readonly description?: string;
+    readonly optional: () => SecretOptionalProp<T>;
 };
 /**
  * A union type representing all `field` types
@@ -100,9 +133,10 @@ declare const prop: {
     list(separator?: string, description?: string): RequiredProp<string[]>;
     /**
      * A string that holds sensitive information and should be treated as secret.
-     * @param description
+     * @param parser The inner parser to use
+     * @param description A user-friendly description of the property
      */
-    secret(description?: string): RequiredProp<string>;
+    secret<T = string>(parser?: (raw: string) => T, description?: string): SecretRequiredProp<T>;
 };
 
 /**

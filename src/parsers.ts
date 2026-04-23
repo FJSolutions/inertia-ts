@@ -66,7 +66,7 @@ export function parseEnum<T extends string>(values: readonly T[]) {
 export function parseList(separator = ","): (raw: string) => string[] {
    return (raw: string) => {
       const items = raw.split(separator).map(s => s.trim()).filter(Boolean)
-      if (items.length === 0) throw new Error("must not be an empty list")
+      if (items.length === 0) throw new Error("can not be an empty list")
       return items
    }
 }

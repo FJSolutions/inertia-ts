@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { makeProp, prop, createEnv } from "../src/"
-import { Secret } from "../src/parsers"
+import { Secret, parseString } from "../src/parsers"
 
 // ---------------------------------------------------------------------------
 // makeField — state chain
@@ -248,7 +248,7 @@ describe("prop.secret", () => {
   })
 
   it("accepts an optional description", () => {
-    expect(prop.secret("API key").description).toBe("API key")
+    expect(prop.secret(parseString, "API key").description).toBe("API key")
   })
 
   it("supports .optional()", () => {
@@ -256,8 +256,7 @@ describe("prop.secret", () => {
   })
 
   it("supports .optional().default()", () => {
-    const fallback = new Secret("fallback")
-    const f = prop.secret().optional().default(fallback)
+    const f = prop.secret().optional().default("fallback")
     expect(f._tag).toBe("defaulted")
     expect(f.fallback.expose()).toBe("fallback")
   })
@@ -283,8 +282,7 @@ describe("prop.secret", () => {
     })
 
     it("uses the fallback when the secret is absent", () => {
-      const fallback = new Secret("default-token")
-      const r = createEnv({ TOKEN: prop.secret().optional().default(fallback) }, {})
+      const r = createEnv({ TOKEN: prop.secret().optional().default("default-token") }, {})
       expect(r.success).toBe(true)
       if (!r.success) return
       expect(r.data.TOKEN?.expose()).toBe("default-token")

@@ -1,4 +1,4 @@
-import type { RequiredProp, OptionalProp, DefaultedProp } from "./types"
+import type { RequiredProp, OptionalProp, DefaultedProp, SecretRequiredProp, SecretOptionalProp } from "./types"
 import {
    parseString,
    parseNumber,
@@ -7,7 +7,8 @@ import {
    parseUrl,
    parsePort,
    parseEnum,
-   parseList, Secret, parseSecret,
+   parseList,
+   Secret,
 } from "./parsers"
 
 // ---------------------------------------------------------------------------
@@ -110,9 +111,23 @@ export const prop = {
 
    /**
     * A string that holds sensitive information and should be treated as secret.
-    * @param description
+    * @param parser The inner parser to use
+    * @param description A user-friendly description of the property
     */
-   secret(description?: string): RequiredProp<Secret<string>> {
-      return makeProp(parseSecret, description)
+   secret<T = string>(parser: (raw: string) => T = parseString as (raw: string) => T, description?: string): SecretRequiredProp<T> {
+      const wrappedParser = (raw: string) => new Secret(parser(raw))
+      const base = makeProp(wrappedParser, description)
+      return {
+         ...base,
+         optional(): SecretOptionalProp<T> {
+            const opt = base.optional()
+            return {
+               ...opt,
+               default(value: T): DefaultedProp<Secret<T>> {
+                  return { _tag: "defaulted", parse: wrappedParser, description, fallback: new Secret(value) }
+               },
+            }
+         },
+      }
    }
 }
