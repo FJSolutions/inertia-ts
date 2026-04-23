@@ -1,4 +1,4 @@
-import type { RequiredProp, OptionalProp, DefaultedProp, SecretRequiredProp, SecretOptionalProp } from "./types"
+import type { RequiredProp, OptionalProp, DefaultedProp, SecretRequiredProp, SecretOptionalProp, GroupProp, Schema } from "./types"
 import {
    parseString,
    parseNumber,
@@ -39,6 +39,34 @@ export function makeProp<T>(
                   description,
                   fallback: value,
                }
+            },
+         }
+      },
+   }
+}
+
+// ---------------------------------------------------------------------------
+// Secret helper (standalone so overloads work outside an object literal)
+// ---------------------------------------------------------------------------
+
+/**
+ * A value that holds sensitive information and should be treated as a secret.
+ * @param description A user-friendly description of the property
+ * @param parser An optional inner parser (defaults to string)
+ */
+function secret(description?: string): SecretRequiredProp<string>
+function secret<T>(description: string, parser: (raw: string) => T): SecretRequiredProp<T>
+function secret<T = string>(description?: string, parser: (raw: string) => T | string = parseString): SecretRequiredProp<T | string> {
+   const wrappedParser = (raw: string) => new Secret(parser(raw))
+   const base = makeProp(wrappedParser, description)
+   return {
+      ...base,
+      optional(): SecretOptionalProp<T | string> {
+         const opt = base.optional()
+         return {
+            ...opt,
+            default(value: T | string): DefaultedProp<Secret<T | string>> {
+               return { _tag: "defaulted", parse: wrappedParser, description, fallback: new Secret(value) }
             },
          }
       },
@@ -109,25 +137,9 @@ export const prop = {
       return makeProp(parseList(separator), description)
    },
 
-   /**
-    * A string that holds sensitive information and should be treated as secret.
-    * @param parser The inner parser to use
-    * @param description A user-friendly description of the property
-    */
-   secret<T = string>(parser: (raw: string) => T = parseString as (raw: string) => T, description?: string): SecretRequiredProp<T> {
-      const wrappedParser = (raw: string) => new Secret(parser(raw))
-      const base = makeProp(wrappedParser, description)
-      return {
-         ...base,
-         optional(): SecretOptionalProp<T> {
-            const opt = base.optional()
-            return {
-               ...opt,
-               default(value: T): DefaultedProp<Secret<T>> {
-                  return { _tag: "defaulted", parse: wrappedParser, description, fallback: new Secret(value) }
-               },
-            }
-         },
-      }
-   }
+   secret,
+}
+
+export function group<S extends Schema>(props: S): GroupProp<S> {
+   return { _tag: "group", props }
 }

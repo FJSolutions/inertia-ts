@@ -9,5 +9,5 @@ export type {
   ValidationResult,
 } from "./types"
 
-export { makeProp, prop } from "./prop"
+export { makeProp, prop, group } from "./prop"
 export { createEnv } from "./createEnv"

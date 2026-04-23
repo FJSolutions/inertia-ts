@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { createEnv, prop, Infer, makeProp } from "../src"
+import { createEnv, prop, group, Infer, makeProp } from "../src"
 import { parseInteger } from "../src/parsers";
 
 // ---------------------------------------------------------------------------
@@ -114,6 +114,59 @@ describe("optional prop", () => {
    it("still validates the value when present", () => {
       const r = createEnv({PORT: prop.number().optional()}, {PORT: "not-a-number"})
       expect(r.success).toBe(false)
+   })
+})
+
+// ---------------------------------------------------------------------------
+// Secret prop
+// ---------------------------------------------------------------------------
+
+describe("secret prop", () => {
+   const source = {NAME: "Francis", AGE: "60", PIN: "42"}
+
+   it("hides a secret when using the default parameters", () => {
+      const schema = {
+         NAME: prop.string(),
+         AGE: prop.integer(),
+         PIN: prop.secret(),
+      }
+      const result = createEnv(schema, source)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.NAME).toBe("Francis")
+      expect(result.data.AGE).toBe(60)
+      expect(result.data.PIN.toString()).toBe("[Secret]")
+      expect(result.data.PIN.expose()).toBe("42")
+   })
+
+   it("hides a secret when using a description", () => {
+      const schema = {
+         NAME: prop.string(),
+         AGE: prop.integer(),
+         PIN: prop.secret("PIN"),
+      }
+      const result = createEnv(schema, source)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.NAME).toBe("Francis")
+      expect(result.data.AGE).toBe(60)
+      expect(result.data.PIN.toString()).toBe("[Secret]")
+      expect(result.data.PIN.expose()).toBe("42")
+   })
+
+   it("hides a secret when using a description and a description", () => {
+      const schema = {
+         NAME: prop.string(),
+         AGE: prop.integer(),
+         PIN: prop.secret("API", parseInteger),
+      }
+      const result = createEnv(schema, source)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.NAME).toBe("Francis")
+      expect(result.data.AGE).toBe(60)
+      expect(result.data.PIN.toString()).toBe("[Secret]")
+      expect(result.data.PIN.expose()).toBe(42)
    })
 })
 
@@ -326,7 +379,12 @@ describe("custom source", () => {
 describe("schema key ordering", () => {
    it("preserves all keys in the result data", () => {
       const r = createEnv(
-         {Z: prop.string(), A: prop.string(), M: prop.string(), O: prop.secret(parseInteger).optional().default(42)},
+         {
+            Z: prop.string(),
+            A: prop.string(),
+            M: prop.string(),
+            O: prop.secret("O", parseInteger).optional().default(42)
+         },
          {Z: "z", A: "a", M: "m"}
       )
       expect(r.success).toBe(true)
@@ -335,5 +393,81 @@ describe("schema key ordering", () => {
       expect(r.data.A).toBe("a")
       expect(r.data.M).toBe("m")
       expect(r.data.O.expose()).toBe(42)
+   })
+})
+
+// ---------------------------------------------------------------------------
+// group()
+// ---------------------------------------------------------------------------
+
+describe("group", () => {
+   it("nests parsed values under the group key", () => {
+      const validationResult = createEnv(
+         {
+            db: group({
+               DB_HOST: prop.string(),
+               DB_PORT: prop.port()
+            })
+         },
+         {DB_HOST: "localhost", DB_PORT: "5432"}
+      )
+      expect(validationResult.success).toBe(true)
+      if (!validationResult.success) return
+      expect(validationResult.data.db.DB_HOST).toBe("localhost")
+      expect(validationResult.data.db.DB_PORT).toBe(5432)
+   })
+
+   it("collects errors from inside the group", () => {
+      const r = createEnv(
+         {db: group({DB_HOST: prop.string(), DB_PORT: prop.port()})},
+         {}
+      )
+      expect(r.success).toBe(false)
+      if (r.success === false) {
+         const keys = r.errors.map(e => e.key)
+         expect(keys).toContain("DB_HOST")
+         expect(keys).toContain("DB_PORT")
+      }
+   })
+
+   it("mixes top-level props and groups", () => {
+      const r = createEnv(
+         {
+            APP_NAME: prop.string(),
+            db: group({
+               DB_HOST: prop.string()
+            })
+         },
+         {APP_NAME: "myapp", DB_HOST: "localhost"}
+      )
+      expect(r.success).toBe(true)
+      if (!r.success) return
+      expect(r.data.APP_NAME).toBe("myapp")
+      expect(r.data.db.DB_HOST).toBe("localhost")
+   })
+
+   it("supports optional props inside a group", () => {
+      const r = createEnv(
+         {
+            db: group({
+               DB_HOST: prop.string(),
+               DB_PORT: prop.port().optional().default(5432)
+            })
+         },
+         {DB_HOST: "localhost"}
+      )
+      expect(r.success).toBe(true)
+      if (!r.success) return
+      expect(r.data.db.DB_PORT).toBe(5432)
+   })
+
+   it("supports nested groups", () => {
+      const r = createEnv(
+         {db: group({primary: group({DB_HOST: prop.string()})})},
+         {DB_HOST: "localhost"}
+      )
+      expect(r.success).toBe(true)
+      if (!r.success) return
+      expect(r.data.db.primary.DB_HOST).toBe("localhost")
    })
 })

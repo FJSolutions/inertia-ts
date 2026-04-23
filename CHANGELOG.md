@@ -6,14 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Todo
+## Todo
 
 - An error-helper to format the errors into something easily readable if
   `createEnv` is unsuccessful.
-- It would be great if I could create sub-objects to logically divide parsed
-  properties into.
+
+## [Unreleased]
+
+## [0.4.0] - 2026-04-23
+
+### Added
+
+- Groups to the Schema
+  - Properties can now be grouped in the output in user-defined sub-objects.
+
+### Changed
+
+- Updated the README to give a proper overview of the library 
+
+### Fixed
+
+- Incorrect type inference for Secrets 
 
 ## [0.3.0] - 2026-04-23
 
@@ -21,7 +34,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Added generic secrets.
   - The default being string.
-  - but if you supply a different parser, then you get correct type propagation
+  - Supplying a parser provides correct type propagation.
 
 ## [0.2.0] - 2026-04-22
 

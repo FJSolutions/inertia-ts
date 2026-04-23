@@ -62,11 +62,18 @@ type SecretRequiredProp<T> = {
 /**
  * A union type representing all `field` types
  */
-type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any>;
+type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any> | SecretRequiredProp<any> | SecretOptionalProp<any>;
+/**
+ * A group of props that will be nested under a sub-object in the output.
+ */
+type GroupProp<S extends Schema> = {
+    readonly _tag: "group";
+    readonly props: S;
+};
 /**
  * Defines an `env` validation schema type definition
  */
-type Schema = Record<string, AnyProp>;
+type Schema = Record<string, AnyProp | GroupProp<any>>;
 type Simplify<T> = {
     [K in keyof T]: T[K];
 } & {};
@@ -74,7 +81,7 @@ type Simplify<T> = {
  * Infers a types from the `env` validation schema
  */
 type Infer<S extends Schema> = Simplify<{
-    readonly [K in keyof S]: S[K] extends DefaultedProp<infer T> ? T : S[K] extends OptionalProp<infer T> ? T | undefined : S[K] extends RequiredProp<infer T> ? T : never;
+    readonly [K in keyof S]: S[K] extends GroupProp<infer G extends Schema> ? Infer<G> : S[K] extends DefaultedProp<infer T> ? T : S[K] extends SecretOptionalProp<infer T> ? Secret<T> | undefined : S[K] extends OptionalProp<infer T> ? T | undefined : S[K] extends SecretRequiredProp<infer T> ? Secret<T> : S[K] extends RequiredProp<infer T> ? T : never;
 }>;
 /**
  * The definition of an `env` validation error
@@ -95,6 +102,13 @@ type ValidationResult<T> = {
 };
 
 declare function makeProp<T>(parse: (raw: string) => T, description?: string): RequiredProp<T>;
+/**
+ * A value that holds sensitive information and should be treated as a secret.
+ * @param description A user-friendly description of the property
+ * @param parser An optional inner parser (defaults to string)
+ */
+declare function secret(description?: string): SecretRequiredProp<string>;
+declare function secret<T>(description: string, parser: (raw: string) => T): SecretRequiredProp<T>;
 declare const prop: {
     /**
      * A non-empty string.
@@ -131,13 +145,9 @@ declare const prop: {
      * Pass a custom separator if needed: prop.list(";")
      */
     list(separator?: string, description?: string): RequiredProp<string[]>;
-    /**
-     * A string that holds sensitive information and should be treated as secret.
-     * @param parser The inner parser to use
-     * @param description A user-friendly description of the property
-     */
-    secret<T = string>(parser?: (raw: string) => T, description?: string): SecretRequiredProp<T>;
+    secret: typeof secret;
 };
+declare function group<S extends Schema>(props: S): GroupProp<S>;
 
 /**
  * Create an environment object from the supplied schema
@@ -146,4 +156,4 @@ declare const prop: {
  */
 declare function createEnv<S extends Schema>(schema: S, source?: Record<string, string | undefined>): ValidationResult<Infer<S>>;
 
-export { type AnyProp, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, makeProp, prop };
+export { type AnyProp, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, group, makeProp, prop };

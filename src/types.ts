@@ -55,12 +55,20 @@ export type SecretRequiredProp<T> = {
 /**
  * A union type representing all `field` types
  */
-export type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any>
+export type AnyProp = RequiredProp<any> | OptionalProp<any> | DefaultedProp<any> | SecretRequiredProp<any> | SecretOptionalProp<any>
+
+/**
+ * A group of props that will be nested under a sub-object in the output.
+ */
+export type GroupProp<S extends Schema> = {
+   readonly _tag: "group"
+   readonly props: S
+}
 
 /**
  * Defines an `env` validation schema type definition
  */
-export type Schema = Record<string, AnyProp>
+export type Schema = Record<string, AnyProp | GroupProp<any>>
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
@@ -69,10 +77,13 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {}
  */
 export type Infer<S extends Schema> = Simplify<{
    readonly [K in keyof S]:
+   S[K] extends GroupProp<infer G extends Schema> ? Infer<G> :
    S[K] extends DefaultedProp<infer T> ? T :
-      S[K] extends OptionalProp<infer T> ? T | undefined :
-         S[K] extends RequiredProp<infer T> ? T :
-            never
+   S[K] extends SecretOptionalProp<infer T> ? Secret<T> | undefined :
+   S[K] extends OptionalProp<infer T> ? T | undefined :
+   S[K] extends SecretRequiredProp<infer T> ? Secret<T> :
+   S[K] extends RequiredProp<infer T> ? T :
+   never
 }>
 
 /**

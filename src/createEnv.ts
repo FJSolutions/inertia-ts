@@ -1,5 +1,6 @@
 import type {
    AnyProp,
+   GroupProp,
    Infer,
    Schema,
    ValidationError,
@@ -27,7 +28,18 @@ export function createEnv<S extends Schema>(
    const errors: ValidationError[] = []
 
    for (const key of Object.keys(schema) as (keyof S & string)[]) {
-      const prop: AnyProp = schema[key]
+      const prop = schema[key]
+
+      if (prop._tag === "group") {
+         const subResult = createEnv(prop.props, source)
+         if (subResult.success) {
+            data[key] = subResult.data
+         } else if(subResult.success === false) {
+            errors.push(...subResult.errors)
+         }
+         continue
+      }
+
       const raw = source[key]
 
       // -- Missing value -------------------------------------------------------

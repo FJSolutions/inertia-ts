@@ -9,6 +9,12 @@ The `intertia-ts` package validates the presence and content of environment
 variables. It does not set the environment but does read it for the values
 defined in a schema object.
 
+- [Quick start](#quick-start)
+   - [Secrets](#secret-props)
+   - [Grouping](#groups)
+- [Best practices](#best-practices)
+- [Full example](#a-longer-example)
+
 ## Quick start
 
 Create a `env.ts` file in the TypeScript root of your project and then call it
@@ -47,69 +53,89 @@ There are schema `prop`s for:
 - enum
 - list
 
-## A longer example
+### Secret props
 
-The following is a more detailed example:
+Sometimes you have values that you don't want to accidentally leak onto the
+console or into logs; this is when the secret `prop` comes in handy.
+
+There is a `secret` method on `prop` which works slightly differently to the
+other property functions.
 
 ```ts
-import { createEnv, prop, makeField } from "../src"
-
-// ---------------------------------------------------------------------------
-// 1. Define the schema
-// ---------------------------------------------------------------------------
-
+const source = {NAME: "Name", AGE: "42", PIN: "12345"}
 const schema = {
-   DATABASE_URL: prop.url("Postgres connection string"),
-   PORT: prop.port().optional().default(3000),
-   NODE_ENV: prop.enum(["development", "staging", "production"] as const),
-   ENABLE_CACHE: prop.boolean().optional().default(false),
-   ALLOWED_HOSTS: prop.list(",", "Comma-separated list of allowed hostnames").optional(),
-   API_KEY: prop.string("Secret API key"),
-
-   // Custom field — any parse function works
-   RETRY_DELAY_MS: makeField((raw) => {
-      const n = Number(raw)
-      if (Number.isNaN(n) || n < 0) throw new Error("must be a non-negative number")
-      return n
-   }, "Delay in ms between retries"),
+   NAME: prop.string(),
+   AGE: prop.integer(),
+   PIN: prop.secret(),
 }
+const result = createEnv(schema, source)
 
-// ---------------------------------------------------------------------------
-// 2. Validate against an env source
-// ---------------------------------------------------------------------------
-
-const result = createEnv(schema, {
-   DATABASE_URL: "https://db.example.com/mydb",
-   NODE_ENV: "production",
-   API_KEY: "secret-abc-123",
-   RETRY_DELAY_MS: "500",
-   // PORT, ENABLE_CACHE → use defaults
-   // ALLOWED_HOSTS → optional, will be undefined
-})
-
-// ---------------------------------------------------------------------------
-// 3. The caller decides what to do on failure
-// ---------------------------------------------------------------------------
-
-if (!result.success) {
-   // @ts-ignore
-   for (const error of result.errors) {
-      console.error(`  ${error.key}: ${error.message}`)
-   }
-   process.exit(1)
+if (result.success) {
+   // Now we get type inference for a successful validation result
+   // result.data.NAME === "Name"
+   // result.data.AGE === 42
+   // result.data.PIN === "[Secret]"
+   // result.data.PIN.expose() === "12345"
 }
-
-// result.data is fully typed — hover over these in your editor:
-const config = result.data
-
-config.DATABASE_URL   // string
-config.PORT           // number  (never undefined — has a default)
-config.NODE_ENV       // "development" | "staging" | "production"
-config.ENABLE_CACHE   // boolean (never undefined — has a default)
-config.ALLOWED_HOSTS  // string[] | undefined
-config.API_KEY        // string
-config.RETRY_DELAY_MS // number
-
 ```
+
+If you want the secret to be a different type, then you supply the parser as a
+parameter to the `secret` function:
+
+```ts
+const source = {NAME: "Name", AGE: "42", PIN: "12345"}
+const schema = {
+   NAME: prop.string(),
+   AGE: prop.integer(),
+   PIN: prop.secret("API", parseInteger),
+}
+const result = createEnv(schema, source)
+
+if (result.success) {
+   /* Now we get type inference for a successful validation result */
+   // result.data.NAME === "Name"
+   // result.data.AGE === 42
+   // result.data.PIN === "[Secret]"
+   // result.data.PIN.expose() === 12345
+}
+```
+
+As it is the second optional parameter of the function, you have to supply a
+description first (this is a best practice anyway). Now the `Secret` holds a
+`number`.
+
+### Groups
+
+If you have a lot of environment properties it can be helpful to organise them
+into groups. A group looks like a sub-object within the schema, and that is how
+it is output in the `result.data` after calling `createEnv`.
+
+```ts
+const validationResult = createEnv(
+   {
+      db: group({
+         DB_HOST: prop.string(),
+         DB_PASSWORD: prop.secret(),
+         DB_PORT: prop.port().optional().default(5432)
+      })
+   },
+   {DB_HOST: "localhost", DB_PASSWORD: "password"}
+)
+
+// validationResult.success === true
+// validationResult.data.db.DB_HOST === "localhost"
+// validationResult.data.db.DB_PASSWORD === "[Secret]"
+// validationResult.data.db.DB_PASSWORD.expose() === "password"
+// validationResult.data.db.DB_PORT === 5432
+```
+
+Notice the group names in the output
+
+## Best practices
+
+- Give all your properties descriptions &ndash; it will help when you're trying
+  to find which one hasn't been set!
+
+## A longer example
 
 For more example code look in the `examples` directory.
