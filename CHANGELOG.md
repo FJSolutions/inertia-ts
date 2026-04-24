@@ -8,39 +8,55 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Todo
 
-- An error-helper to format the errors into something easily readable if
-  `createEnv` is unsuccessful.
-
 ## [Unreleased]
+
+## [0.5.1] - 2026-04-24
+
+### Changed
+
+- Added the `prop.description` to the `ValidationResult.errors` and display in
+  the pretty-printed output of `formatEnvError`.
+
+## [0.5.0] - 2026-04-24
+
+### Added
+
+- A `utils` module with a `formatEnvError` validation error helper to
+  pretty-print all the validation errors.
+
+### Changed
+
+- Moved fully to `npm` for publishing and hosting.
 
 ## [0.4.0] - 2026-04-23
 
 ### Added
 
 - Groups to the Schema
-  - Properties can now be grouped in the output in user-defined sub-objects.
+   - Properties can now be grouped in the output in user-defined sub-objects.
 
 ### Changed
 
-- Updated the README to give a proper overview of the library 
+- Updated the README to give a proper overview of the library
 
 ### Fixed
 
-- Incorrect type inference for Secrets 
+- Incorrect type inference for Secrets
 
 ## [0.3.0] - 2026-04-23
 
 ### Changed
 
 - Added generic secrets.
-  - The default being string.
-  - Supplying a parser provides correct type propagation.
+   - The default being string.
+   - Supplying a parser provides correct type propagation.
 
 ## [0.2.0] - 2026-04-22
 
 ### Added
 
-- A secret `prop` whose value will not be exposed accidentally in logging or JSON serialization.
+- A secret `prop` whose value will not be exposed accidentally in logging or
+  JSON serialization.
 
 ## [0.1.1] - 2026-04-22
 

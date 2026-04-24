@@ -92,6 +92,7 @@ export type Infer<S extends Schema> = Simplify<{
 export type ValidationError = {
    readonly key: string
    readonly message: string
+   readonly description?: string
 }
 
 /**

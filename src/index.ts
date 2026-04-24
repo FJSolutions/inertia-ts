@@ -11,3 +11,4 @@ export type {
 
 export { makeProp, prop, group } from "./prop"
 export { createEnv } from "./createEnv"
+export { formatEnvError } from "./utils"

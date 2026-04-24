@@ -89,6 +89,7 @@ type Infer<S extends Schema> = Simplify<{
 type ValidationError = {
     readonly key: string;
     readonly message: string;
+    readonly description?: string;
 };
 /**
  * Represents the result of validating the current `env`
@@ -156,4 +157,17 @@ declare function group<S extends Schema>(props: S): GroupProp<S>;
  */
 declare function createEnv<S extends Schema>(schema: S, source?: Record<string, string | undefined>): ValidationResult<Infer<S>>;
 
-export { type AnyProp, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, group, makeProp, prop };
+/**
+ * Formats a failed `createEnv` result into a human-readable error block.
+ * @param title      Application name shown in the header.
+ * @param result     The failed result returned by `createEnv`.
+ * @param options    Optional description and whether to apply ANSI colour (default: true).
+ */
+declare function formatEnvError<T>(title: string, result: Extract<ValidationResult<T>, {
+    success: false;
+}>, options?: {
+    description?: string;
+    color?: boolean;
+}): string;
+
+export { type AnyProp, type DefaultedProp, type Infer, type OptionalProp, type RequiredProp, type Schema, type ValidationError, type ValidationResult, createEnv, formatEnvError, group, makeProp, prop };

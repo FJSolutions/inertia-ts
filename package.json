@@ -1,31 +1,38 @@
 {
-   "name": "inertia-ts",
-   "description": "A library to validate and parse the environment into a state object",
-   "version": "0.4.0",
-   "type": "module",
-   "main": "./dist/index.js",
-   "types": "./dist/index.d.ts",
-   "repository": {
-      "type": "git",
-      "url": "https://github.com/FJSolutions/inertia-ts"
-   },
-   "scripts": {
-      "test": "vitest",
-      "test:once": "vitest --watch=false",
-      "build": "tsup",
-      "pub": "pnpm build & pnpm pack --pack-destination /Projects/npm-local/",
-      "clean": "node --input-type=module --eval \"import{rmSync}from'fs';rmSync('lib',{recursive:true,force:true})\""
-   },
-   "keywords": [
-      "env"
-   ],
-   "author": "Francis Judge <fjudge7@gmail.com>",
-   "license": "MIT",
-   "devDependencies": {
-      "@types/node": "^25.6.0",
-      "tsup": "^8.5.1",
-      "typescript": "^5.9.3",
-      "vitest": "^4.1.5"
-   },
-   "packageManager": "pnpm@10.27.0"
+  "name": "inertia-ts",
+  "description": "A library to validate and parse the environment into a state object",
+  "version": "0.5.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FJSolutions/inertia-ts"
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:once": "vitest --watch=false",
+    "build": "tsup",
+    "pub": "pnpm build & pnpm pack --pack-destination /Projects/npm-local/",
+    "clean": "node --input-type=module --eval \"import{rmSync}from'fs';rmSync('lib',{recursive:true,force:true})\""
+  },
+  "keywords": [
+    "env"
+  ],
+  "author": "Francis Judge <fjudge7@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
+  },
+  "packageManager": "pnpm@10.27.0"
 }

@@ -1,4 +1,4 @@
-import { createEnv, Infer, prop } from "../src"
+import { createEnv, formatEnvError, Infer, prop } from "../src"
 
 // Create the schema
 const schema = {
@@ -12,7 +12,7 @@ const result = createEnv(schema)
 
 // Check if there are any errors and throw them
 if (result.success === false) {
-   throw result.errors
+   throw new Error(formatEnvError("MyApp", result))
 }
 
 // Create a strongly-typed const to export

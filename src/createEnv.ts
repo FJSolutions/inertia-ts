@@ -46,7 +46,7 @@ export function createEnv<S extends Schema>(
 
       if (raw === undefined || raw === "") {
          if (prop._tag === "required") {
-            errors.push({ key, message: "is required but was not set" })
+            errors.push({ key, message: "is required but was not set", description: prop.description })
             continue
          }
 
@@ -67,7 +67,7 @@ export function createEnv<S extends Schema>(
          data[key] = prop.parse(raw)
       } catch (err) {
          const message = err instanceof Error ? err.message : String(err)
-         errors.push({ key, message })
+         errors.push({ key, message, description: prop.description })
       }
    }
 
