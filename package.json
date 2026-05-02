@@ -1,7 +1,7 @@
 {
-  "name": "inertia-ts",
+  "name": "@judgeknot/inertia-ts",
   "description": "A library to validate and parse the environment into a state object",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "exports": {
     ".": {
